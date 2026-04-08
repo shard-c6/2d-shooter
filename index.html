@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stellar Guardian | CG 2D Space Shooter</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Main Canvas -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Glassmorphism HUD -->
+        <div id="hud">
+            <div class="hud-item" id="score-container">
+                <span class="label">SCORE</span>
+                <span class="value" id="score-val">0000</span>
+            </div>
+            <div class="hud-item" id="lives-container">
+                <span class="label">LIVES</span>
+                <div id="lives-icons"></div>
+            </div>
+        </div>
+
+        <!-- Start/Game Over Screens -->
+        <div id="overlay" class="visible">
+            <div class="glass-panel">
+                <h1 id="overlay-title">STELLAR GUARDIAN</h1>
+                <p id="overlay-desc">Defend the sector from incoming hostiles.</p>
+                <button id="start-btn">INITIALIZE CORE</button>
+                <div id="controls-hint">
+                    <div class="hint-item"><span>W/A/S/D or ARROWS</span> : MOVE</div>
+                    <div class="hint-item"><span>SPACE</span> : FIRE</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Controls -->
+        <div id="mobile-controls">
+            <div id="joystick-zone">
+                <div id="joystick-base">
+                    <div id="joystick-stick"></div>
+                </div>
+            </div>
+            <button id="fire-btn">FIRE</button>
+        </div>
+    </div>
+
+    <script type="module" src="src/main.js"></script>
+</body>
+</html>

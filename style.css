@@ -1,0 +1,239 @@
+:root {
+    --bg-color: #050508;
+    --primary-neon: #00f2ff;
+    --secondary-neon: #ff0055;
+    --accent-neon: #bc13fe;
+    --text-color: #e0e0f0;
+    --glass-bg: rgba(20, 20, 35, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--bg-color);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text-color);
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+canvas {
+    background-color: transparent;
+    display: block;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+}
+
+/* HUD Styling */
+#hud {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.hud-item {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    padding: 10px 20px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--primary-neon);
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.value {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 0 0 10px var(--primary-neon);
+}
+
+#lives-icons {
+    display: flex;
+    gap: 8px;
+    margin-top: 5px;
+}
+
+.life-icon {
+    width: 15px;
+    height: 15px;
+    background: var(--secondary-neon);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    box-shadow: 0 0 10px var(--secondary-neon);
+}
+
+/* Overlay Styling */
+#overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+}
+
+#overlay.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    padding: 40px;
+    border-radius: 24px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 0 100px rgba(0, 242, 255, 0.1);
+}
+
+h1 {
+    font-size: 32px;
+    margin-bottom: 15px;
+    letter-spacing: 4px;
+    background: linear-gradient(45deg, var(--primary-neon), var(--accent-neon));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
+}
+
+p {
+    margin-bottom: 30px;
+    opacity: 0.8;
+    line-height: 1.6;
+}
+
+button {
+    background: linear-gradient(45deg, var(--primary-neon), var(--accent-neon));
+    border: none;
+    color: white;
+    padding: 15px 30px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    letter-spacing: 1px;
+    box-shadow: 0 10px 20px rgba(0, 242, 255, 0.2);
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px rgba(0, 242, 255, 0.4);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+#controls-hint {
+    margin-top: 30px;
+    font-size: 12px;
+    opacity: 0.5;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Mobile Controls */
+#mobile-controls {
+    position: absolute;
+    bottom: 30px;
+    left: 20px;
+    right: 20px;
+    display: none; /* Shown via JS on touch devices */
+    justify-content: space-between;
+    align-items: flex-end;
+    pointer-events: none;
+    z-index: 50;
+}
+
+#joystick-zone {
+    width: 150px;
+    height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: all;
+}
+
+#joystick-base {
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    position: relative;
+    backdrop-filter: blur(5px);
+}
+
+#joystick-stick {
+    width: 50px;
+    height: 50px;
+    background: var(--primary-neon);
+    border-radius: 50%;
+    position: absolute;
+    top: 25px;
+    left: 25px;
+    box-shadow: 0 0 20px var(--primary-neon);
+    transition: transform 0.05s linear;
+}
+
+#fire-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--secondary-neon);
+    pointer-events: all;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 8px 30px rgba(255, 0, 85, 0.4);
+}
+
+@media (max-width: 768px) {
+    #mobile-controls {
+        display: flex;
+    }
+    #controls-hint {
+        display: none;
+    }
+}
