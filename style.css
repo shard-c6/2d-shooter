@@ -61,7 +61,8 @@ canvas {
     border-radius: 12px;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    min-width: 100px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
@@ -164,8 +165,45 @@ button:active {
     transform: translateY(0);
 }
 
+#mission-directives {
+    margin: 30px 0;
+    text-align: left;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid var(--glass-border);
+}
+
+#mission-directives h3 {
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: var(--primary-neon);
+    margin-bottom: 12px;
+    font-weight: bold;
+}
+
+#mission-directives ul {
+    list-style: none;
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    opacity: 0.9;
+}
+
+#mission-directives li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.bullet {
+    color: var(--secondary-neon);
+    font-size: 10px;
+    margin-top: 2px;
+}
+
 #controls-hint {
-    margin-top: 30px;
     font-size: 12px;
     opacity: 0.5;
     display: flex;

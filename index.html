@@ -17,6 +17,10 @@
                 <span class="label">SCORE</span>
                 <span class="value" id="score-val">0000</span>
             </div>
+            <div class="hud-item" id="level-container">
+                <span class="label">LEVEL</span>
+                <span class="value" id="level-val">01</span>
+            </div>
             <div class="hud-item" id="lives-container">
                 <span class="label">LIVES</span>
                 <div id="lives-icons"></div>
@@ -29,9 +33,18 @@
                 <h1 id="overlay-title">STELLAR GUARDIAN</h1>
                 <p id="overlay-desc">Defend the sector from incoming hostiles.</p>
                 <button id="start-btn">INITIALIZE CORE</button>
+                <div id="mission-directives">
+                    <h3>MISSION DIRECTIVES</h3>
+                    <ul>
+                        <li><span class="bullet">▶</span> Destroy incoming hostiles before they breach the sector.</li>
+                        <li><span class="bullet">▶</span> Direct collision results in immediate hull damage.</li>
+                        <li><span class="bullet">▶</span> 1 Life penalty for every hostile that escapes the viewport.</li>
+                        <li><span class="bullet">▶</span> Enemy reinforcement speed correlates with your score.</li>
+                    </ul>
+                </div>
                 <div id="controls-hint">
-                    <div class="hint-item"><span>W/A/S/D or ARROWS</span> : MOVE</div>
-                    <div class="hint-item"><span>SPACE</span> : FIRE</div>
+                    <div class="hint-item"><span>W/A/S/D or ARROWS</span> : NAVIGATE</div>
+                    <div class="hint-item"><span>SPACE</span> : QUANTUM DISCHARGE</div>
                 </div>
             </div>
         </div>

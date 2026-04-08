@@ -15,10 +15,12 @@ export class Player {
         this.lastHit = 0;
     }
 
-    update(keys, joystickX) {
+    update(keys, joystickX, joystickY, canvasWidth, canvasHeight) {
         let dx = 0;
+        let dy = 0;
         this.targetRotation = 0;
 
+        // Horizontal Movement
         if (keys['ArrowLeft'] || keys['a'] || joystickX < -0.2) {
             dx = -CONFIG.PLAYER_SPEED;
             this.targetRotation = -0.3; // Bank left
@@ -27,14 +29,26 @@ export class Player {
             this.targetRotation = 0.3; // Bank right
         }
 
+        // Vertical Movement (New Feature)
+        if (keys['ArrowUp'] || keys['w'] || joystickY < -0.2) {
+            dy = -CONFIG.PLAYER_SPEED;
+        } else if (keys['ArrowDown'] || keys['s'] || joystickY > 0.2) {
+            dy = CONFIG.PLAYER_SPEED;
+        }
+
         this.x += dx;
+        this.y += dy;
+
         // Interpolate rotation for smoothness (Inertia effect)
         this.rotation += (this.targetRotation - this.rotation) * 0.1;
 
-        // Viewport Clipping
-        if (this.x < 0) this.x = 0;
-        const maxW = window.innerWidth; // Will be properly set in main
-        // We use gameWidth later, for now boundaries are checked in main
+        // Viewport Clipping (Production Standard: Clamped boundaries)
+        this.x = Math.max(0, Math.min(this.x, canvasWidth - this.width));
+        
+        // Vertical constraint: Allow player to move only in the bottom third of the screen
+        const minPlayerY = canvasHeight * 0.6;
+        const maxPlayerY = canvasHeight - this.height - 20;
+        this.y = Math.max(minPlayerY, Math.min(this.y, maxPlayerY));
     }
 
     draw(ctx) {
@@ -73,6 +87,7 @@ export class Bullet {
         this.y = y;
         this.speed = CONFIG.BULLET_SPEED;
         this.active = true;
+        this.toRemove = false;
     }
 
     update() {
@@ -102,6 +117,7 @@ export class Enemy {
         this.y = -this.height;
         this.speed = speed;
         this.active = true;
+        this.toRemove = false;
         this.type = Math.random() > 0.5 ? 'hex' : 'rect';
     }
 

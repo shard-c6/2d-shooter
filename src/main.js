@@ -20,10 +20,12 @@ class Game {
         this.particles = [];
         
         this.score = 0;
+        this.level = 1;
         this.gameState = 'START';
         this.spawnTimer = 0;
         this.lastFireTime = 0;
         this.screenShake = 0;
+        this.levelUpTimer = 0;
 
         this.initStars();
         this.initUI();
@@ -53,6 +55,7 @@ class Game {
             this.reset();
             this.gameState = 'PLAYING';
             overlay.classList.remove('visible');
+            startBtn.blur(); // Focus removal to prevent Spacebar 'click' re-triggering
         });
 
         this.updateLivesUI();
@@ -64,8 +67,11 @@ class Game {
         this.enemies = [];
         this.particles = [];
         this.score = 0;
+        this.level = 1;
         this.updateScoreUI();
+        this.updateLevelUI();
         this.updateLivesUI();
+        this.levelUpTimer = 0;
     }
 
     update() {
@@ -75,7 +81,7 @@ class Game {
         this.stars.forEach(s => s.update(this.canvas.height));
 
         // Player
-        this.player.update(this.input.keys, this.input.joystick.x);
+        this.player.update(this.input.keys, this.input.joystick.x, this.input.joystick.y, this.canvas.width, this.canvas.height);
 
         // Firing
         const now = Date.now();
@@ -87,27 +93,29 @@ class Game {
         }
 
         // Bullets
-        this.bullets.forEach((b, i) => {
-            b.update();
-            if (!b.active) this.bullets.splice(i, 1);
-        });
+        this.bullets.forEach(b => b.update());
+        this.bullets = this.bullets.filter(b => b.active && !b.toRemove);
 
         // Enemies
         this.spawnTimer++;
-        const spawnRate = Math.max(15, CONFIG.ENEMY_SPAWN_RATE - Math.floor(this.score / 10) * 5);
+        // Difficulty scaling based on Level (Discrete)
+        const spawnRate = Math.max(20, CONFIG.ENEMY_SPAWN_RATE - (this.level - 1) * 10);
         if (this.spawnTimer > spawnRate) {
-            const speed = CONFIG.ENEMY_START_SPEED + (this.score / 20);
+            const speed = CONFIG.ENEMY_START_SPEED + (this.level - 1) * 0.8;
             this.enemies.push(new Enemy(this.canvas.width, speed));
             this.spawnTimer = 0;
         }
 
-        this.enemies.forEach((e, i) => {
-            e.update();
+        this.enemies.forEach(e => e.update());
+        
+        // Handle enemies escaping/reaching bottom
+        this.enemies.forEach(e => {
             if (!e.active) {
-                this.enemies.splice(i, 1);
                 this.takeDamage();
             }
         });
+        
+        this.enemies = this.enemies.filter(e => e.active && !e.toRemove);
 
         // Particles
         this.particles.forEach((p, i) => {
@@ -123,25 +131,30 @@ class Game {
 
     checkCollisions() {
         // Bullet vs Enemy
-        this.bullets.forEach((b, bi) => {
-            this.enemies.forEach((e, ei) => {
-                if (checkAABB(b.getRect(), e.getRect())) {
-                    this.createExplosion(e.x + e.width / 2, e.y + e.height / 2, CONFIG.COLORS.ENEMY);
-                    this.enemies.splice(ei, 1);
-                    this.bullets.splice(bi, 1);
+        for (const bullet of this.bullets) {
+            for (const enemy of this.enemies) {
+                if (bullet.toRemove || enemy.toRemove) continue;
+                
+                if (checkAABB(bullet.getRect(), enemy.getRect())) {
+                    this.createExplosion(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2, CONFIG.COLORS.ENEMY);
+                    enemy.toRemove = true;
+                    bullet.toRemove = true;
                     this.score++;
                     this.updateScoreUI();
+                    this.checkLevelUp();
                 }
-            });
-        });
+            }
+        }
 
         // Enemy vs Player
-        this.enemies.forEach((e, ei) => {
-            if (checkAABB(e.getRect(), this.player.getRect())) {
-                this.enemies.splice(ei, 1);
+        for (const enemy of this.enemies) {
+            if (enemy.toRemove) continue;
+            
+            if (checkAABB(enemy.getRect(), this.player.getRect())) {
+                enemy.toRemove = true;
                 this.takeDamage();
             }
-        });
+        }
     }
 
     takeDamage() {
@@ -185,6 +198,19 @@ class Game {
         document.getElementById('score-val').innerText = this.score.toString().padStart(4, '0');
     }
 
+    checkLevelUp() {
+        if (this.score > 0 && this.score % CONFIG.LEVEL_UP_THRESHOLD === 0) {
+            this.level++;
+            this.levelUpTimer = 120; // 2 seconds at 60fps
+            this.updateLevelUI();
+            this.screenShake = 10; // Level up impact
+        }
+    }
+
+    updateLevelUI() {
+        document.getElementById('level-val').innerText = this.level.toString().padStart(2, '0');
+    }
+
     updateLivesUI() {
         const container = document.getElementById('lives-icons');
         container.innerHTML = '';
@@ -210,6 +236,30 @@ class Game {
         this.bullets.forEach(b => b.draw(this.ctx));
         this.player.draw(this.ctx);
         
+        // Level Up Announcement
+        if (this.levelUpTimer > 0) {
+            this.drawLevelUp();
+            this.levelUpTimer--;
+        }
+
+        this.ctx.restore();
+    }
+
+    drawLevelUp() {
+        this.ctx.save();
+        this.ctx.font = 'bold 48px Segoe UI';
+        this.ctx.fillStyle = CONFIG.COLORS.PLAYER;
+        this.ctx.textAlign = 'center';
+        this.ctx.shadowBlur = 20;
+        this.ctx.shadowColor = CONFIG.COLORS.PLAYER;
+        
+        // Pulsing opacity
+        const alpha = Math.min(1, this.levelUpTimer / 30);
+        this.ctx.globalAlpha = alpha;
+        
+        this.ctx.fillText(`LEVEL ${this.level}`, this.canvas.width / 2, this.canvas.height / 2);
+        this.ctx.font = '16px Segoe UI';
+        this.ctx.fillText('ENEMIES REINFORCED', this.canvas.width / 2, this.canvas.height / 2 + 40);
         this.ctx.restore();
     }
 
