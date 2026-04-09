@@ -3,6 +3,7 @@ import { CONFIG } from './config.js';
 import { Player, Bullet, Enemy, Star, Particle } from './entities.js';
 import { InputHandler } from './input.js';
 import { checkAABB } from './renderer.js';
+import { leaderboard } from './leaderboard.js';
 
 class Game {
     constructor() {
@@ -52,13 +53,50 @@ class Game {
         const overlay = document.getElementById('overlay');
         
         startBtn.addEventListener('click', () => {
-            this.reset();
-            this.gameState = 'PLAYING';
-            overlay.classList.remove('visible');
-            startBtn.blur(); // Focus removal to prevent Spacebar 'click' re-triggering
+            if (this.gameState === 'GAMEOVER') {
+                this.handleScoreSubmission();
+            } else {
+                this.startGame();
+            }
+            startBtn.blur(); // Fix: Prevent Spacebar from re-triggering the button
         });
 
         this.updateLivesUI();
+    }
+
+    startGame() {
+        const overlay = document.getElementById('overlay');
+        this.reset();
+        this.gameState = 'PLAYING';
+        overlay.classList.remove('visible');
+    }
+
+    async handleScoreSubmission() {
+        const playerName = prompt("ENTER YOUR CALLSIGN:", "RECRUIT") || "RECRUIT";
+        await leaderboard.submitScore(playerName, this.score);
+        this.showLeaderboard();
+    }
+
+    async showLeaderboard() {
+        const scores = await leaderboard.getTopScores();
+        const desc = document.getElementById('overlay-desc');
+        const title = document.getElementById('overlay-title');
+        const startBtn = document.getElementById('start-btn');
+
+        title.innerText = "COMMANDER STANDINGS";
+        let html = '<div class="leaderboard-list">';
+        scores.forEach((s, i) => {
+            html += `<div class="entry"><span>${i+1}. ${s.name}</span><span>${s.score}</span></div>`;
+        });
+        html += '</div>';
+        desc.innerHTML = html;
+        startBtn.innerText = "RETURN TO MISSION";
+        
+        // Change button behavior to restart
+        startBtn.onclick = () => {
+            startBtn.onclick = null; // Reset
+            this.startGame();
+        };
     }
 
     reset() {
@@ -98,7 +136,6 @@ class Game {
 
         // Enemies
         this.spawnTimer++;
-        // Difficulty scaling based on Level (Discrete)
         const spawnRate = Math.max(20, CONFIG.ENEMY_SPAWN_RATE - (this.level - 1) * 10);
         if (this.spawnTimer > spawnRate) {
             const speed = CONFIG.ENEMY_START_SPEED + (this.level - 1) * 0.8;
@@ -108,10 +145,7 @@ class Game {
 
         this.enemies.forEach(e => e.update());
         
-        // Enemies are naturally filtered out in the next step when they go off-screen
-        // Removing takeDamage() here as per user request to not penalize for missed obstacles.
-
-        
+        // Cleanup off-screen enemies
         this.enemies = this.enemies.filter(e => e.active && !e.toRemove);
 
         // Particles
@@ -122,12 +156,10 @@ class Game {
 
         this.checkCollisions();
 
-        // Screen Shake decay
         if (this.screenShake > 0) this.screenShake *= 0.9;
     }
 
     checkCollisions() {
-        // Bullet vs Enemy
         for (const bullet of this.bullets) {
             for (const enemy of this.enemies) {
                 if (bullet.toRemove || enemy.toRemove) continue;
@@ -143,7 +175,6 @@ class Game {
             }
         }
 
-        // Enemy vs Player
         for (const enemy of this.enemies) {
             if (enemy.toRemove) continue;
             
@@ -185,9 +216,9 @@ class Game {
         const desc = document.getElementById('overlay-desc');
         const startBtn = document.getElementById('start-btn');
         
-        title.innerText = "SYSTEM FAILURE";
-        desc.innerText = `Final Score: ${this.score}. The sector has fallen under hostile control.`;
-        startBtn.innerText = "REBOOT CORE";
+        title.innerText = "MISSION FAILED";
+        desc.innerText = `Final Score: ${this.score}. Defenses breached. Leaderboard upload available.`;
+        startBtn.innerText = "SUBMIT CALLSIGN & SCORE";
         overlay.classList.add('visible');
     }
 
@@ -198,9 +229,9 @@ class Game {
     checkLevelUp() {
         if (this.score > 0 && this.score % CONFIG.LEVEL_UP_THRESHOLD === 0) {
             this.level++;
-            this.levelUpTimer = 120; // 2 seconds at 60fps
+            this.levelUpTimer = 120;
             this.updateLevelUI();
-            this.screenShake = 10; // Level up impact
+            this.screenShake = 10;
         }
     }
 
@@ -233,7 +264,6 @@ class Game {
         this.bullets.forEach(b => b.draw(this.ctx));
         this.player.draw(this.ctx);
         
-        // Level Up Announcement
         if (this.levelUpTimer > 0) {
             this.drawLevelUp();
             this.levelUpTimer--;
@@ -250,7 +280,6 @@ class Game {
         this.ctx.shadowBlur = 20;
         this.ctx.shadowColor = CONFIG.COLORS.PLAYER;
         
-        // Pulsing opacity
         const alpha = Math.min(1, this.levelUpTimer / 30);
         this.ctx.globalAlpha = alpha;
         
@@ -268,3 +297,4 @@ class Game {
 }
 
 new Game();
+

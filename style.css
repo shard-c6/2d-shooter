@@ -275,3 +275,28 @@ button:active {
         display: none;
     }
 }
+
+/* Leaderboard Styling */
+.leaderboard-list {
+    margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    text-align: left;
+}
+
+.entry {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.entry span:first-child {
+    color: var(--primary-neon);
+}
+
